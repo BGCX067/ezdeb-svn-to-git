@@ -1,0 +1,350 @@
+DHIS Principle and Architecture:
+================================
+
+	DHIS is a client-server architecture meant to update databases
+	for systems which are assigned a dynamic IP[v4] address.
+
+	By the means of a DHIS client a host which is assigned a dynamic
+	IP address (either from its ISP or from DHCP) is able to 
+	communicate with a DHIS server in order to advertise its newly
+	acquired IP address.
+
+	DHIS comprises a UDP based protocol to achieve this purpose. 
+
+	A DHIS client has a unique identification number and a set of
+	authentication keys, runs in background, and attempts to reach
+	its server. 
+	
+	The DHIS server (permanently online) listens to UDP messages
+	from its clients and authenticates these against its knowledge
+	of keys. When authentication is successful the DHIS server 
+	updates one or more databases with the newly received IP
+	address for the given client. 
+
+	The client then keeps sending, every period of time, refresh
+	messages to the server. If the server doesn't hear from a client
+	for an amount of time (3x refresh period) it considers that the
+	client has gone offline and marks it accordingly with 192.168.255.0
+	(a private unrechable IP address).
+
+	Alternativelly the server may receive an OFFLINE_REQ
+	packet from the client, in which case the DNS record
+	is updated at once and the online state droped.
+
+	In essence the DHIS server:
+
+		Listens to a UDP port for messages from clients
+		Authenticates clients
+		Checks that clients are still connected
+		If not, marks them offline
+
+Compatibility:
+==============
+
+	The DHIS release 5 server dhisd is compatible with release 3 and
+	4 clients.
+
+	Release 3 and 4 servers are not, however, compatible with 
+	release 5 clients.
+	
+Secure QRC Authentication:
+==========================
+
+	On a secure level DHIS 5 has built in public key authentication based
+	on QRC (Quadratic Residue Cypher). The server(dhisd) supports
+	two methods of authentication, password and qrc. Furthermore,
+	dhisd 5 is compatible with R3 authentication scheme.
+
+	In R5 authentication (and protocol) the client sends an
+	ECHO_REQ packet to the server from which it expects an
+	ECHO_REP. If received the connection is established and
+	the client proceeds to authentication. If mode is password,
+	a simple password is sent raw over the network upon which
+	the server confirms or denies the online state. If scheme
+	is QRC the server sends the client an AUTH_SY packet to
+	which the client must reply with an AUTH_SX before authentication
+	can be confirmed.
+
+	The QRC algorithm, as implemented in DHIS 5, is as follows:
+
+	The client has two 100 digit keys P and Q. The server
+	has (for each client) the public key N obtained by
+	P*Q. P and Q are both prime and congruent to 3 mod 4.
+	When authentication is requested the server generates
+	a random number (prime relative to N) called X and 
+	squares it mod N. It then sends its square to the client (Y)
+	which by its turn has to calculte its square root
+	mod N (X') using the chinese remainder theorem. X' is sent 
+	back and compared with X. X' may only be calculated 
+	knowing the two private keys factors P and Q. 
+
+	In order to make use of QRC dhisd uses the GNU Multi 
+	Precision Library gmp. 
+
+Signals:
+========
+
+	dhisd accepts HUP and TERM signals. A kill -HUP will
+	make it reload the hosts database and kill -TERM
+	will terminate it. Its pid number is recorded a the
+	text file (default: /var/run/dhis/dhisd.pid)
+
+	Before terminating with SIGTERM dhisd will attempt to bring all 
+	online clients offline.
+
+	The pid file location can be changed with either the -P option 
+	of the PidFile statement under dhisd.conf
+
+	In addition, a kill -USR1 signal will increate the debug level of 
+	dhisd by 1 and a -USR2 will reset its debug level to 0.
+
+Logging:
+========
+
+	dhisd logs online and offline transitions on a text file
+	(default: /var/log/dhis/dhisd.log)
+
+	The log file location can be changed with either the -l option 
+	of the LogFile statement under dhisd.conf
+
+Command Line Options:
+=====================
+
+	dhisd supports the following command line options:
+
+	-b <ipv4addr> binds the server to the interface with the specified
+		      IPv4 address instead of the default 0.0.0.0 ANY
+
+	-p <udp port> allows the server to listen to an 
+	              alternative port. Default is 58800.
+	
+	-P <pid_file> allows the specification of an alternative port
+
+                      e.g. dhisd -P /var/run/dhisd.pid
+
+	-l <log_file> allows specifying a path for the log file
+
+		      e.g. dhisd -l /var/log/dhisd.log
+	
+	-d <dbase_file> allows specifying a path for the database file
+
+		      e.g. dhisd -d /usr/local/etc/dhis.db
+
+		      If the special keyword "mysql" is given as a file, 
+		      and dhisd has been compiled with MySQL support,
+		      dhisd uses the authentication information present 
+		      in dhisd.conf to connect to a MySQL database and 
+		      use it as a database instead.
+
+	-D	      Increases the verbosity log level by 1
+	
+	All options may be used in conjunction with each other.
+
+Confirguration File
+===================
+
+	If specified and if it exists, parameters can be put on a 
+	configuration file (default is /usr/local/etc/dhisd.conf)
+	
+	The following parameters are supported:
+
+	LogFile		a-log-file-location
+	PidFile		a-pid-file-location
+	BindAddress	The address to bind the server to, default is ANY
+	BindPort	The UDP port to use, default is 58000
+	DBFile		The location of the database file
+
+	See dhisd.conf.sample for an example.
+
+MySQL Support
+=============
+
+	dhisd 5.4 adds MySQL support in that, instead of using a dhis.db file
+	for keeping the hosts, these can be kept on a MySQL database table.
+
+	In order to add MySQL suport the source code must be compiled with
+	WITH_MYSQL enabled (in the Makefile) and must be linked against
+	the mysqlclient library. 
+
+	If enabled, dhisd will try to use an SQL database instead of the 
+	traditional text file if and only if the DBFile is set to the special
+	keyword "mysql".
+
+	If so, dhisd needs to know how to reach the database so the following 
+	dhisd.conf configuration parameters become mandatory:
+
+	MySQLServer	127.0.0.0	; Or the IP address of the server
+	MySQLUser	auser		
+	MySQLPassword	userpassword
+	MySQLDBase	mysql-database-to-use
+
+	auser with userpassword must exist as a user in the SQL server and 
+	must have read/write access to the DHISHost table of the database in
+	use. 
+
+	And the parameters must be correct in order to dhisd to connect 
+	to the database and load it. If any of them are missed or incorrect
+	dhisd won't run. 
+
+	The server queries/updates a table named DHISHost under the specified
+	database. The table should have the following schema at least, although
+	more parameters can be added for other purposes without impact on the
+	server.
+
+	+-------------------+--------------+------+-----+---------+-------+
+	| Field             | Type         | Null | Key | Default | Extra |
+	+-------------------+--------------+------+-----+---------+-------+
+	| DHISHostID        | int(11)      | NO   | PRI | 0       |       | 
+	| DHISHostName      | varchar(127) | NO   | UNI |         |       | 
+	| DHISHostPassword  | varchar(127) | YES  |     | NULL    |       | 
+	| DHISAuthN0        | varchar(127) | YES  |     | NULL    |       | 
+	| DHISAuthN1        | varchar(127) | YES  |     | NULL    |       | 
+	| DHISAuthN2        | varchar(127) | YES  |     | NULL    |       | 
+	| DHISAuthN3        | varchar(127) | YES  |     | NULL    |       | 
+	| DHISStatus        | int(11)      | NO   |     | 0       |       | 
+	| DHISOnlineCmd     | varchar(255) | YES  |     | NULL    |       | 
+	| DHISOfflineCmd    | varchar(255) | YES  |     | NULL    |       | 
+	| DHISLastLogin     | bigint(20)   | NO   |     | 0       |       | 
+	+-------------------+--------------+------+-----+---------+-------+
+
+Text Database
+=============
+
+	For details on using a text file as a database instead of MySQL
+	(the traditional method) please see dhis.db.sample
+
+Running dhisd as dhis user
+==========================
+
+	The server can and should be run by a user created for that purpose,
+	namely dhis. Running it as root is no longer required.
+
+Multi-server mode:
+==================
+
+	Since release 5 (due to the R5 client) DHIS may be used
+	in more than one server at the same time for redundancy or
+	load sharing purposes.
+
+	DHIS R5 clients has the possibility of specifying multiple
+	redundant servers. When connected the clients try to reach
+	one of the available servers and use the one that provides
+	a faster reply (or a reply at all if others are down).
+
+	The only restriction to running DHIS in redundant multi-servers
+	is to keep exactly the same database files on all redundant systems
+	at all times.
+
+	An example for a redundant or load-balanced dynamic DNS service:
+
+	
+		Primary DNS server A               Secondary DNS server B
+                        |         +-----------------+          |
+                        |                                      |
+              --------------------------------------------------
+              |                   |
+        DHIS Server C        DHIS Server D
+               \                  /
+                ----- client -----
+
+	Client attempts to communicate with C and D. Client uses whichever
+	replies (first) and authenticates with it. Say, if C picks up the
+	request, C issues an nsupdate to A or B. An Update is then sent to B
+	or A if DNS NOTIFY is configured.
+
+	If C is down D will keep the system running.
+
+	If is also possible to run multiple DHIS servers on the
+	same machine (using different UDP port and file locations)
+	in either independent or redundant mode.
+
+
+Firewalls:
+==========
+
+	In order to configure a firewall for a DHIS server ensure that:
+
+	The server can receive UDP packets on its listening port
+	(default: 58800)
+
+	The server can send UDP packets to anywhere/anyport
+	(Since the client has the possibility of changing its UDP port)
+
+
+Refreshing and keeping the connection alive:
+============================================
+
+	The new R5 method of keep-alive for DHIS is as follows:
+
+	The client authenticates with the server. Optionally the
+	client (in the authentication request) sends a refresh 
+	rate proposal. 
+
+	The server updates the client with its subscribed services
+	and initialises the refresh period to a default of 60 seconds.
+	
+	If the refresh period was proposed by the client in the 
+	AUTH request the server compares this value against minimum
+	and maximum limits and, if valid, uses this refresh delay
+	instead.
+
+	When N seconds have elapsed the client should send an ECHO_REQ
+	to the server. If the server doesn't receive ECHO_REQs for three
+	periods of time it considers the host offline and marks it 
+	accordingly.
+
+
+Online and Offline Commands:
+============================
+
+	The server may run individual commands for a given client at online 
+	and offline transitions.
+
+	For each client in dhis.db:
+
+	If the client record has a line in the form:
+
+		OnCmd /path/to/on/cmd
+
+	/path/to/on/cmd is executed when that client becomes online.
+
+	If the client record has a line in the form:
+
+		OffCmd /path/to/off/cmd
+
+	/path/to/off/cmd is executed when that client becomes offline.
+
+	Both OffCmd and OnCmd executions occur with 2 parameters,
+	the HostID of the client and the IP address acquired via DHIS.
+
+	In addition both oncmd and offcmd commands may be invoqued
+	with additional parameters (3, 4, 5, ...) as they appear
+	in the dhis.db file. The first "word" after the command
+	is passed to the external program as argument 3 (1 and 2
+	are id and address from above), the second as argument 4
+	and so on...
+
+	Example of a simple logging test:
+
+	1000 {
+		hostpass something
+		oncmd /etc/oncmd
+	}
+
+
+	# /etc/oncmd
+	#!/bin/sh	
+	#
+	echo I am $1 online now at $2
+
+	OnCmd = oncmd and OffCmd = offcmd as keywords are not case
+	sensitive.
+
+
+Support:
+========
+
+	Please address any questions or bugs regarding dhisd to 
+        support (at) dhis.org
+
+

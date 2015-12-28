@@ -1,0 +1,173 @@
+# debian 6.0 SDK
+# kernel
+#linux-image-2.6.32-5-amd64
+# base-files
+base-files
+# concated string libc6 libgcc1
+& libc6 libgcc1
+libncursesw5
+dialog
+perl-base
+# concated string debconf debconf-english
+& debconf debconf-english
+libc-bin
+# passwd
+libpam0g
+libpam-modules
+passwd
+# busybox
+busybox
+# module-init-tools
+lsb-base
+module-init-tools
+# zlib
+zlib1g
+# binutils
+libstdc++6
+binutils
+# bzip2
+bzip2
+# kernel
+linux-source-2.6.32
+# make
+make
+# gcc
+gcc-4.4-base
+gcc-4.4
+gcc
+libgomp1
+# g++
+& libstdc++6-4.4-dev g++-4.4
+g++
+# m4
+m4
+libdb4.8
+libgdbm3
+# perl
+& perl-modules perl
+# autoconf
+autoconf
+debianutils
+sensible-utils
+# automake
+automake
+# dpkg
+dpkg
+libbz2-1.0
+xz-lzma
+xz-utils
+liblzma2
+# libtool
+libtool
+libltdl7
+libltdl-dev
+# bash
+libncurses5
+dash
+ncurses-bin
+ncurses-term
+bash
+# coreutils
+coreutils
+libacl1
+libattr1
+# sed
+sed
+libselinux1
+# grep
+grep
+# findutils
+findutils
+# tar
+tar
+# diffutils
+diffutils
+# patch
+patch
+# gzip
+gzip
+# hostname
+hostname
+# cpp
+cpp
+cpp-4.4
+libgmp3c2
+libmpfr4
+# file
+file
+libmagic1
+# autotools-dev
+autotools-dev
+# libc6-dev
+libc6-dev
+libc-dev-bin
+linux-libc-dev
+# gawk
+gawk
+# openssl
+libssl0.9.8
+zlib1g-dev
+libssl-dev
+# build kernel
+libtimedate-perl
+libdpkg-perl
+dpkg-dev
+build-essential
+libpcre3
+libglib2.0-0
+libcroco3
+libunistring0
+libxml2
+gettext-base
+gettext
+intltool-debian
+po-debconf
+libuuid1
+libblkid1
+libslang2
+tzdata
+libsepol1
+mount
+# sysv-rc
+insserv
+sysvinit-utils
+sysv-rc
+initscripts
+util-linux
+#kernel-package
+kernel-package
+fakeroot
+html2text
+groff-base
+bsdutils
+bsdmainutils
+man-db
+debhelper
+mime-support
+libexpat1
+readline-common
+libreadline6
+libsqlite3-0
+& python-minimal python2.6-minimal
+python2.6
+python
+python-support
+lsb-release
+diffstat
+quilt
+# setup command
+#ln -sf /bin/busybox /bin/ash
+#ln -sf /bin/busybox /bin/su
+#ln -sf /bin/bash /bin/sh
+#ln -sf /usr/bin/gawk /usr/bin/awk
+#ln -sf /usr/bin/aclocal-1.11 /usr/bin/aclocal
+#ln -sf /usr/bin/automake-1.11 /usr/bin/automake
+#ln -sf /usr/bin/fakeroot-sysv /usr/bin/fakeroot
+#mkdir -p /dev
+#mkdir -p /proc
+#mkdir -p /sys
+#mkdir -p /tmp
+#mkdir -p /var
+#mkdir -p /var/log
+#mkdir -p /var/lib
+#mkdir -p /var/run

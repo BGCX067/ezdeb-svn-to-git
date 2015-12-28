@@ -1,0 +1,83 @@
+.Dd 2002-06-22
+.Dt DHISD 8
+.Os "Debian GNU/Linux"
+.\" Manual page created by Guus Sliepen <guus@debian.org>
+.Sh NAME
+.Nm dhisd
+.Nd Dynamic Host Information System server.
+.Sh SYNOPSIS
+.Nm
+.Op Fl D
+.Op Fl p Ar port
+.Op Fl d Ar database
+.Op Fl s Ar services
+.Op Fl l Ar logfile
+.Op Fl P Ar pidfile
+.Sh DESCRIPTION
+DHIS is a client-server architecture meant to update databases
+for systems which are assigned a dynamic IP[v4] address.
+.Pp
+By the means of a DHIS client a host which is assigned a dynamic
+IP address (either from its ISP or from DHCP) is able to
+communicate with a DHIS server in order to advertise its newly
+acquired IP address.
+.Pp
+DHIS comprises a UDP based protocol to achieve this purpose.
+.Pp
+A DHIS client has a unique identification number and a set of
+authentication keys, runs in background, and attempts to reach
+its server.
+.Pp
+The DHIS server (permanently online) listens to UDP messages
+from its clients and authenticates these against its knowledge
+of keys. When authentication is successful the DHIS server
+updates one or more databases with the newly received IP
+address for the given client.
+.Pp
+The server then keeps sending, every period of time, check
+requests to each of its connected clients. These need to
+be acknowledged. If not the server will consider, on an
+individual basis, that the client has disconnected and will
+again update the databases to an offline state.
+.Pp
+Alternativelly the server may receive an OFFLINE_REQ
+packet from the client, in which case the DNS record
+is updated at once and the online state droped.
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl D
+Increase debug level.
+.It Fl p Ar port
+Specify port to listen on. If not specified, the default is port 58800.
+.It Fl d Ar database
+Use an alternative database file instead of
+.Pa /etc/dhis-server/dhis.db .
+.It Fl s Ar services
+Use an alternative database file instead of
+.Pa /etc/dhis-server/services.db .
+.It Fl l Ar logfile
+Use an alternative log file instead of
+.Pa /var/log/dhisd.log .
+.It Fl P Ar pidfile
+Use an alternative PID file instead of
+.Pa /var/run/dhisd.pid .
+.El
+.Sh FILES
+.Bl -tag -width indent
+.It Pa /etc/dhis-server/dhis.db
+DHIS client database.
+Contains the credentials of clients.
+.It Pa /etc/dhis-server/services.db
+DHIS service database.
+Contains a list of services and the location of the corresponding DHIS engine plugins.
+.El
+.Sh SEE ALSO
+.Xr dhis-genkeys 8
+.Sh AUTHOR
+.Nm
+has been written by
+.An Joao Cabral Aq jcnc@dhis.org .
+.Pp
+This manual page was written by
+.An Guus Sliepen Aq guus@debian.org
+for the Debian GNU/Linux system.

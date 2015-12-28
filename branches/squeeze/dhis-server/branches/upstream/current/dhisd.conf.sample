@@ -1,0 +1,29 @@
+;
+; This is an example configuration file for dhisd. Most of these parameters
+; can also be set using command line options. See dhisd -h for help on this.
+;
+
+; The log file
+LogFile		/var/log/dhis/dhisd.log
+
+; The PID file
+PidFile		/var/run/dhis/dhisd.pid
+
+; The address to bind. The default is 0.0.0.0 i.e. any
+BindAddress	0.0.0.0
+
+; The UDP port to use. The default is 58800
+BindPort	58800
+
+; The Database Text file or the special keyword "mysql" for MySQL
+DBFile		/usr/local/etc/dhisd.db
+; DBFile	mysql
+
+; If MySQL is enabled and used, the following parameters must be filled
+; in so that dhisd can log into the mysql database.
+MySQLServer	127.0.0.1
+MySQLUser	dhis
+MySQLPassword	secret
+MySQLDBase	DHIS
+
+

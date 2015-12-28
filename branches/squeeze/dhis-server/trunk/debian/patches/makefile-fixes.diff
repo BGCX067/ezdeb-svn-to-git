@@ -1,0 +1,87 @@
+--- dhis-server-5.5.orig/Makefile
++++ dhis-server-5.5/Makefile
+@@ -26,11 +26,13 @@
+ 
+ CC=gcc
+ 
+-MYSQL_INCLUDE=	-I/usr/local/include/mysql -I/usr/local/mysql/include \
+-		-I/usr/local/mysql/include/mysql
++PREFIX=	/usr
+ 
+-MYSQL_LIBDIR=	-L/usr/local/lib/mysql -L/usr/local/mysql/lib \
+-		-L/usr/local/mysql/lib/mysql
++MYSQL_INCLUDE=	-I$(PREFIX)/include/mysql -I$(PREFIX)/mysql/include \
++		-I$(PREFIX)/mysql/include/mysql
++
++MYSQL_LIBDIR=	-L$(PREFIX)/lib/mysql -L$(PREFIX)/mysql/lib \
++		-L$(PREFIX)/mysql/lib/mysql
+ 
+ WFLAGS=-Wall -Wstrict-prototypes -Wpointer-arith \
+         -Wno-sign-compare -Wno-traditional -Wreturn-type -Wswitch -Wshadow \
+@@ -39,18 +41,18 @@
+ # Possible CFLAGS: -g -O3 -DDONT_FORK
+ #
+ 
+-CFLAGS= -O3 $(WFLAGS) -I. -I/usr/local/include # $(MYSQL_INCLUDE) -DWITH_MYSQL=1
+-LFLAGS= -L/usr/local/lib # $(MYSQL_LIBDIR)
++CFLAGS= -O3 $(WFLAGS) -I. -I$(PREFIX)/include # $(MYSQL_INCLUDE) -DWITH_MYSQL=1
++LFLAGS= -L$(PREFIX)/lib # $(MYSQL_LIBDIR)
+ 
+ # For System V (Solaris) add -lnsl and -lsocket
+ # For MySQL support add -lmysqlclient
+ LIBS=-lgmp # -lmysqlclient #-lnsl -lsocket 
+ 
+-INSTALLBIN=/usr/local/sbin
+-INSTALLCONF=/usr/local/etc
+-INSTALLRC=/usr/local/etc/rc.d
+-LOGDIR=/var/log/dhis
+-PIDDIR=/var/run/dhis
++INSTALLBIN=$(DESTDIR)$(PREFIX)/sbin
++INSTALLCONF=$(DESTDIR)/etc
++INSTALLRC=$(DESTDIR)/etc/init.d
++LOGDIR=$(DESTDIR)/var/log/dhis
++PIDDIR=$(DESTDIR)/var/run/dhis
+ CP=cp
+ OWNER=dhis
+ GROUP=dhis
+@@ -63,7 +65,7 @@
+ OBJS=qrc.o misc.o nsupdate.o ddb.o network.o online.o 
+ RM=rm -f
+ 
+-all: dhisd dhisgenkeys
++all: dhisd #dhisgenkeys
+ 
+ dhisd:	$(OBJS) main.o
+ 	$(CC) $(LFLAGS) -o dhisd $(OBJS) $(LIBS) main.o
+@@ -77,25 +79,16 @@
+ genkeys.o: genkeys.c
+ 	$(CC) $(CFLAGS) -c genkeys.c
+ 
+-install: dhisd  dhisgenkeys
+-	strip dhisd dhisgenkeys
++install: dhisd #dhisgenkeys
++	#strip dhisd dhisgenkeys
+ 	$(MKDIR) $(INSTALLBIN)
++	$(MKDIR) $(INSTALLCONF)/dhis-server
+ 	$(MKDIR) $(LOGDIR)
+ 	$(MKDIR) $(PIDDIR)
+ 	$(CP) dhisd $(INSTALLBIN)
+-	$(CP) dhisgenkeys $(INSTALLBIN)
+-	$(CHOWN) dhis $(INSTALLBIN)/dhisd $(INSTALLBIN)/dhisgenkeys $(LOGDIR) $(PIDDIR)
+-	$(CHGRP) dhis $(INSTALLBIN)/dhisd $(INSTALLBIN)/dhisgenkeys $(LOGDIR) $(PIDDIR)
+-	$(CHMOD) 770 $(INSTALLBIN)/dhisd $(INSTALLBIN)/dhisgenkeys $(LOGDIR) $(PIDDIR)
+-	$(CHMOD) u+s $(INSTALLBIN)/dhisd
+-	$(CP) dhis.db.sample dhisd.conf.sample $(INSTALLCONF)
+-	$(CHOWN) dhis $(INSTALLCONF)/dhis.db.sample $(INSTALLCONF)/dhisd.conf.sample
+-	$(CHGRP) dhis $(INSTALLCONF)/dhis.db.sample $(INSTALLCONF)/dhisd.conf.sample
+-	$(CHMOD) 640 $(INSTALLCONF)/dhis.db.sample $(INSTALLCONF)/dhisd.conf.sample
+-	$(CP) dhisd.rc $(INSTALLRC)/dhisd
+-	$(CHOWN) dhis $(INSTALLRC)/dhisd
+-	$(CHGRP) dhis $(INSTALLRC)/dhisd
+-	$(CHMOD) 755 $(INSTALLRC)/dhisd
++	#$(CP) dhisgenkeys $(INSTALLBIN)
++	#$(CP) dhis.db.sample $(INSTALLCONF)/dhis-server/
++	#$(CP) dhisd.conf.sample $(INSTALLCONF)/dhis-server/
+ 
+ clean:
+ 	$(RM) dhisgenkeys *.core core dhisd *.o *~

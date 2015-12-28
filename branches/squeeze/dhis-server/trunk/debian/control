@@ -1,0 +1,21 @@
+Source: dhis-server
+Section: net
+Priority: optional
+Maintainer: Guus Sliepen <guus@debian.org>
+Build-Depends: debhelper (>> 7.0.0), libgmp3-dev
+Standards-Version: 3.8.3
+Homepage: http://www.dhis.org/
+
+Package: dhis-server
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends:
+Suggests:
+Description: Dynamic Host Information System - server
+ DHIS is a client-server architecture meant to update databases
+ for systems which are assigned a dynamic IP[v4] address.
+ .
+ By the means of a DHIS client a host which is assigned a dynamic
+ IP address (either from its ISP or from DHCP) is able to
+ communicate with a DHIS server in order to advertise its newly
+ acquired IP address.

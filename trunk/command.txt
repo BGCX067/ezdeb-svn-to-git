@@ -1,0 +1,11 @@
+# build customized kernel
+make-kpkg --append-to-version -5-amd64 --revision 2.6.32-45 --initrd --rootcmd fakeroot kernel_image modules_image
+
+# add customized deb package
+svn-inject dhis-server_5.5-1.dsc https://ezdeb.googlecode.com/svn/branches/squeeze/
+
+# fetch deb packages
+sudo ./fetch-deb.sh debian-6.0-SDK-list.txt 2>&1 | tee fetch.log
+
+# build SDK rootfs
+sudo ./build-SDK-rootfs.sh debian-6.0-SDK-list.txt 2>&1 | tee build.log

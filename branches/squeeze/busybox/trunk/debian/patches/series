@@ -1,0 +1,33 @@
+doc-man-name.patch
+shell-ash-export-HOME.patch
+applets-fallback.patch
+version.patch
+init-console.patch
+strip.patch
+make_gen_build_files_skip_quilt.patch
+
+# The following patches have been merged upstream and will be in version 1.18
+readlink-use-xmalloc_realpath.patch
+mark-Linux-specific-configuration-options.patch
+init-loginutils-termios-portability-fixes.patch
+init-halt-portability-improvements.patch
+init-make-the-initial-TERM-value-configurable.patch
+libbb.h-add-device-names-for-Hurd-and-FreeBSD.patch
+mkdir-fix-p-on-FreeBSD.patch
+libbb-conditionalize-AF_-usage-in-error-reporting.patch
+tcpsvd-udpsvd-conditionalize-usage-of-SO_ORIGINAL_DS.patch
+less-remove-misguided-dependency-on-PLATFORM_LINUX.patch
+bootchartd-mounting-tmpfs-is-Linux-specific.patch
+vlock-disable-linux-console-calls-on-other-systems.patch
+cttyhack-serial-console-detection-is-Linux-specific.patch
+klogd-make-it-work-on-non-linux-systems.patch
+stty-sort-out-preprocessor-conditionals.patch
+update-scripts-kconfig-_shipped.patch
+blockdev.patch
+
+# The following patches will likely be merged soon
+u-mount-FreeBSD-support.patch
+swaponoff-FreeBSD-support.patch
+
+# not sent upstream
+init-console-CRTSCTS.patch

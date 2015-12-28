@@ -1,0 +1,34 @@
+;
+; DHIS R5 Server Clients Database
+;
+; A sample DHIS database file for a DHIS server
+; 
+; 
+; Record 1000 has password authentication (possibly R3 or R4)
+;
+1000 {
+	HostName	host1.somewhere.org
+	HostPass	secret0
+}
+
+; Record 1001 has QRC authentication (R4 or R5) 
+;
+1001 {
+	HostName	host2.somewhere.org
+        AuthN           13497898849868626180517976399531009237740469647749
+        AuthN           41645948317777733432972176109042647087704948785549
+        AuthN           58474928768099947065907839246737275047327707787846
+        AuthN           80670622203628424308100996612730498037034893335481
+}
+
+; Record 1002 has password authentication 
+; plus /usr/local/etc/dhis/1002/on.sh is executed at online time
+; and /usr/local/etc/dhis/1002/off.sh is executed at offline time
+;
+1002 {
+	HostName	host3.somewhere.org
+	HostPass	secret4
+	OnCmd		/usr/local/etc/dhis/1002/on.sh <param3> <param4>
+	OffCmd		/usr/local/etc/dhis/1002/on.sh <param3> <param4>
+}
+

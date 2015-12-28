@@ -1,0 +1,4 @@
+dhisd-linux.patch
+makefile-fixes.diff
+dhisd.JT.patch
+fhs-compliance.diff

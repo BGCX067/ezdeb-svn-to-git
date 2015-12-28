@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+#
+
+# PROVIDE: dhisd
+# REQUIRE: SERVERS
+
+. /etc/rc.subr
+
+dhisd_enable=${dhisd_enable:-"NO"}
+dhisd_flags=${dhisd_flags:-""}
+dhisd_user=${dhisd_user:-"dhis"}
+dhisd_group=${dhisd_group:-"dhis"}
+
+name="dhisd"
+rcvar=`set_rcvar`
+command="/usr/local/sbin/dhisd"
+command_args=""
+
+pidfile="/var/run/dhis/${name}.pid"
+
+load_rc_config $name
+run_rc_command "$1"
+

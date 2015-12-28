@@ -1,0 +1,101 @@
+dhis-server (5.5-1) unstable; urgency=low
+
+  * NMU.  Change dependency libgmp3-dev --> libgmp-dev.
+
+ -- Steve M. Robbins <smr@debian.org>  Wed, 16 Mar 2011 22:15:23 -0500
+
+dhis-server (5.3-2.1) unstable; urgency=low
+
+  * NMU.  Change dependency libgmp3-dev --> libgmp-dev.
+
+ -- Steve M. Robbins <smr@debian.org>  Wed, 16 Mar 2011 22:15:23 -0500
+
+dhis-server (5.3-2) unstable; urgency=low
+
+  * Adopt 3.0 (quilt) format.
+  * Bump Standards-Version.
+  * Use dh_prep instead of dh_clean -k.
+  * Compile with -fno-strict-aliasing.
+  * Apply patch from Peter Gervai restoring compatibility with version 5.5
+    clients. Closes: #516292
+
+ -- Guus Sliepen <guus@debian.org>  Sat, 19 Dec 2009 00:38:53 +0100
+
+dhis-server (5.3-1.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Temporary files are to be created in /tmp not in current directory
+
+ -- Alexander Reichle-Schmehl <tolimar@debian.org>  Tue, 09 Sep 2008 22:34:56 +0200
+
+dhis-server (5.3-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fixing unsave tempfile creation (Closes: #496388)
+
+ -- Alexander Reichle-Schmehl <tolimar@debian.org>  Tue, 09 Sep 2008 20:55:31 +0200
+
+dhis-server (5.3-1) unstable; urgency=low
+
+  * New upstream release.
+    - Fixes parsing of comments in database file. Closes: #458862
+
+ -- Guus Sliepen <guus@debian.org>  Sat, 05 Jan 2008 22:08:50 +0100
+
+dhis-server (5.2-4) unstable; urgency=low
+
+  * Build with gcc, not with gcc-4.2.
+
+ -- Guus Sliepen <guus@debian.org>  Tue, 14 Aug 2007 13:54:06 +0200
+
+dhis-server (5.2-3) unstable; urgency=low
+
+  * Remove strip command from Makefile. Closes: #436764
+
+ -- Guus Sliepen <guus@debian.org>  Tue, 14 Aug 2007 13:40:14 +0200
+
+dhis-server (5.2-2) unstable; urgency=low
+
+  * Add LSB section to the init script.
+
+ -- Guus Sliepen <guus@debian.org>  Sat, 18 Nov 2006 13:10:41 +0100
+
+dhis-server (5.2-1) unstable; urgency=low
+
+  * New upstream release. Closes: #372555
+  * Remove warnings caused by silly use of unsigned char.
+
+ -- Guus Sliepen <guus@debian.org>  Tue, 13 Jun 2006 13:03:38 +0200
+
+dhis-server (5.1-5) unstable; urgency=low
+
+  * Link against libgmp3c2. Closes: #329272
+  * Add missing .El tag in manpage.
+
+ -- Guus Sliepen <guus@debian.org>  Wed, 21 Sep 2005 15:24:08 +0200
+
+dhis-server (5.1-4) unstable; urgency=low
+
+  * Don't let restart fail if daemon is not running.
+
+ -- Guus Sliepen <guus@debian.org>  Sun, 18 Jan 2004 14:51:47 +0100
+
+dhis-server (5.1-3) unstable; urgency=low
+
+  * Remove unused #include <varargs.h>. Closes: #195294
+
+ -- Guus Sliepen <guus@debian.org>  Fri, 30 May 2003 11:11:43 +0200
+
+dhis-server (5.1-2) unstable; urgency=low
+
+  * Added build-dependency on libgmp3-dev.
+  * Recommend dhis-tools-dns instead of dhis-tools.
+
+ -- Guus Sliepen <guus@sliepen.eu.org>  Sat, 22 Jun 2002 22:53:39 +0200
+
+dhis-server (5.1-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Guus Sliepen <guus@debian.org>  Sat, 22 Jun 2002 11:28:45 +0200
+

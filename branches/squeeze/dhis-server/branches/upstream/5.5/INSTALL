@@ -1,0 +1,332 @@
+
+Install instructions for DHIS server rel5.4
+===========================================
+
+dhisd is the DHIS server, meant to permit updating external 
+databases with dynamically assiged IP addresses to clients.
+
+In order to build the dhisd server the following requirements must
+be met:
+
+	The machine must be permanently connected to the internet
+	with a static IP address.
+
+	The machine which will act as a server should be running
+	a distribution of UNIX or similar system.
+
+	A C compiler is needed.
+
+	The GNU Multi Precision library is required (see section 0 below).
+
+	You need a DNS server that is configured for the zone you wish to
+	update and that allows nsupdates from the server on which dhisd is 
+	run. 
+
+
+0. GMP
+======
+
+	Before starting to compile DHISD, the GNU MultiPrecision library gmp
+	must be installed. 
+
+	It may be downloaded from:
+
+	ftp://ftp.dhis.org/pub/dhis/gmp-4.2.2.tar.gz
+
+	Decompressed. Building should require:
+
+	./configure
+	make
+	make install
+
+1. Compile Stage
+----------------
+
+	If your system is System V based, edit the Makefile and add
+	-lsocket -lnsl to the LIBS section. These are required 
+	for TCP/IP operation.
+
+	Being in the source directory type "make".
+	It should build the dhisd binary.
+
+	If you want to make use of the MySQL support in dhisd-5.4,
+	please edit the Makefile and uncomment 
+
+		# -DWITH_MYSQL 	# From the CFLAGS section
+		# $(MYSQL_LIBDIR) # From the LFLAGS section
+		# -lmysqlclient	# From the LIBS section
+
+	The DHIS server relies on the fact that your system has an
+	nsupdate command available under /usr/sbin/nsupdate.
+	If this is not the case you may need to edit nsupdate.h and
+	change its location before compiling the code.
+
+	Build with "make"
+
+	You will need to have a mysqlclient library in your system,
+	typically somewhere under /usr/local.
+
+	
+2. Install stage
+----------------
+
+	Create a user called "dhis" and a group called "dhis"
+
+	Type "make install" which will:
+
+		Create /var/log/dhis and assign it to dhis:dhis
+		Create /var/run/dhis and assign it to dhis:dhis
+
+		Copy dhisd and dhisgenkyes to /usr/local/sbin
+		Copy dhis.db.sample and dhisd.conf.sample to /usr/local/etc
+
+		Copy dhisd.rc to /usr/local/etc/rc.d/dhisd
+
+		Otherwise, make sure you start /usr/local/sbin/dhisd on startup
+
+		Make all these files owned by dhis:dhis with appropriate 
+		permissions.
+
+	If you plan on using a text based database file:
+
+	Create a text file named dhis.db with a text editor under
+	/usr/local/etc/dhis.db
+
+	Each dynamic host in the database file is represented by
+	a record in the following form:
+
+	ID {
+		hostname	something.domain
+		authentication 	keys
+	}
+
+	
+	Example: 3 hosts, 2 with password authentication and 1 with 
+	QRC authentication.
+
+	dhis.db:
+	--------
+	1000 {
+		HostName	host1.somewhere.com
+		HostPass	secret1
+	}
+
+	1001 {
+		HostName	host2.somewhere.com
+		HostPass	secret2
+	}
+	1002 {
+		HostName	host3.somewhere.com
+        	AuthN   62618356157083313953659443711837574706224086057551
+        	AuthN   20427737733677817431836864820217527591008711003863
+        	AuthN   70979542582114024334017868024554473396638523106022
+        	AuthN   2702375049521348659606361903688258217224352016237
+	}
+
+	
+	A dynamic record starts with a { and ends with a }. 
+
+	The hostid is a unique number that identifies the client.
+
+	HostPass is the text password that the client uses to authenticate.
+	
+	AuthN is the client's public key if QRC is being used.
+	Please note that either hostpass or authn must be present
+	for each host but they may not be used together. 
+
+	QRC keys may be generated with the dhisgenkeys utility provided
+	in this distribution. Run dhisgenkeys and copy-paste the 
+	AuthN lines. AuthP and AuthQ lines are the client's private
+	keys and should be sent to the client wishing to authenticate
+	using QRC.
+
+	authn is the client's public key. It may be represented 
+	as a series of authn lines in which case the digits
+	are concatenated in appearance order originating a 
+	bigger public key.
+
+	Any line inside a record that does not have a known keyword
+	is discarded and thus, may be used as a comment or additional 
+	information.
+
+	Keywords are case insensitive thus AuthN is the same as authn.
+
+	Please note that R3 clients should use password (and hostpass)
+	and not QRC. The authentication sequence is different but
+	the same keywords serves both purposes i.e., password
+	in R3 and R4/R5.
+
+	1003 uses QRC and has the public key resulting
+	from concatenating the number sequence.
+
+	For each new dynamic host added, kill -HUP the dhisd process 
+	for database reloading.
+
+	See the README file for more information on the server.
+
+	Start dhisd and add it to your OS's startup scripts:
+	
+		/usr/local/sbin/dhisd
+
+	Or in xBSD with the startup script: 
+
+		Add dhisd_enable="YES" to rc.conf
+		If you are using a user/group other than dhis add to rc.conf:
+			dhisd_user="auser"
+			dhisd_group="agroup"
+
+		Start the server:
+
+		/usr/local/etc/rc.d/dhisd start
+
+
+3. DNS
+------
+
+	The purpose of DHIS is to update DNS hosts of a given domain.
+	These hosts need to exist in the nameserver which must be able 
+	to accept updates. 
+
+	Assuming that you are installing dhisd for a ficticious domain 
+	named somewhere.org with BIND,
+
+	Configure your BIND name server
+
+	Add to /etc/named.conf something like:
+
+	zone "somewhere.org" in {
+        	type master;
+        	file "zonefile";
+		allow-update { 127.0.0.1; };
+	};
+
+	And then create a zone file for the dynamic domain with 
+	each dynamic host listed there i.e. 
+
+	e.g.
+
+	$TTL 86400      ; 1 day
+	somewhere.org  IN SOA  is.somewhere.org hostmaster.somewhere.org. (
+                                2007216591 ; serial
+                                28800      ; refresh (8 hours)
+                                7200       ; retry (2 hours)
+                                604800     ; expire (1 week)
+                                86400      ; minimum (1 day)
+                                )
+                        NS      is.somewhere.org.
+	$ORIGIN somewhere.org.
+	$TTL 60 ; 1 minute
+	
+	host1		A	192.168.255.0
+	host2		A	192.168.255.0
+	host3		A	192.168.255.0
+
+	And restart the nameserver in order for the changes to take 
+	effect and for host1, host2 and host3 to be recognised. 
+
+	Note: The nameserver(s) must be the authority servers for the 
+	domain you wish to run. 
+
+	Note: If you do not add the hosts themselves, dhisd will add them
+	the first time they come online.
+
+
+4. Adding Records
+-----------------
+
+	For each new host, as described above, a new record must be 
+	added to dhis.db and a kill -HUP must be sent to the dhisd process.
+
+	For MySQL hosts, see below.
+
+5. MySQL Support
+----------------
+
+	If you want to have the DHIS hosts in a MySQL table instead of in
+	the dhis.db file, you need to compile the server with MySQL
+	support enabled (see above). 
+
+	You then need to edit the configuration file dhisd.conf and add
+	5 parameters that will make dhisd query the database:
+
+
+	DBFile		mysql
+	MySQLServer     127.0.0.1
+	MySQLUser       dhis
+	MySQLPassword   secret
+	MySQLDBase      DHIS
+
+	The user dhis must have read/write permissions on the database DHIS.
+
+	In addition you need to create the "DHISHost" table in the database
+	of choice with a schema similar to the following:
+
+	CREATE TABLE `DHISHost` (
+	  `DHISHostID` int(11) NOT NULL DEFAULT '0',
+	  `DHISHostName` varchar(127) NOT NULL DEFAULT '',
+	  `DHISHostPassword` varchar(127) DEFAULT NULL,
+	  `DHISAuthN0` varchar(127) DEFAULT NULL,
+	  `DHISAuthN1` varchar(127) DEFAULT NULL,
+	  `DHISAuthN2` varchar(127) DEFAULT NULL,
+	  `DHISAuthN3` varchar(127) DEFAULT NULL,
+	  `DHISStatus` int(11) NOT NULL DEFAULT '0',
+	  `DHISOnlineCmd` varchar(255) DEFAULT NULL,
+	  `DHISOfflineCmd` varchar(255) DEFAULT NULL,
+	  `DHISLastLogin` bigint(20) NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`DHISHostID`),
+	  UNIQUE KEY `DHISHosts_UID` (`DHISHostID`),
+	  UNIQUE KEY `DHISHosts_Hostname` (`DHISHostName`)
+	) ENGINE=InnoDB;
+
+	And a DHIS Server Log table with:
+
+	CREATE TABLE `DHISServerLog` (
+	  `DHISLogString` varchar(255) NOT NULL DEFAULT ''
+	) ENGINE=InnoDB;
+
+	All hosts that come online and offline will be logged under 
+	DHISServerLog in addition to the default dhisd.log file
+
+	Then add hosts to DHISHost as wished with insert statements. 
+
+	Each host must have a DHISHostID, a DHISHostName, 
+	a DHISHostPassword OR the 4 QRC keys set DHISAuthN0, DHISAuthN1, 
+	DHISAuthN2 and DHISAuthN3, and DHISStatus must be set to anything
+	other than 0 (0 means that the host is locked). 
+
+	Everytime a host logs in, the database is updated and the host's
+	DHISLastLogin field is updated with the current date/time as given by
+	the unix time(3) command.
+
+	Once you have created your hosts in the MySQL you can start the dhisd
+	server. Any new hosts or changes need to be reflected in the server
+	with a kill -HUP to it. 
+
+6. Running dhisd in debug mode
+------------------------------
+
+	The DHIS server dhisd may be configured to log DEBUG messages
+	to syslog.
+
+	Currently most messages are logged under LOG_DEBUG so
+	a proper log file specified in syslog.conf is required.
+
+	By default dhisd does not log much. 
+	Currently most information will be dumped on level 1 
+	and only one function will log on level 2.
+
+	There are two ways of turning debugging on:
+
+	1) Use the -D option 
+
+	To log on level 1 use dhisd -D
+	To log on level 2 use dhisd -D -D
+
+	2) Using SIGUSR1 and SIGUSR2 dhisd can be configured
+	at run time to increase or reset its log level.
+	Sengind a SIGURS1 to the dhisd process increases its log
+	level by one. Sending a SIGUSR2 to the process resets
+	the log level to 0.
+
+And that's it. The DHIS server is installed.
+
